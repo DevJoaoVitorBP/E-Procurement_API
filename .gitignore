@@ -1,0 +1,48 @@
+## Build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+out/
+artifacts/
+
+## Test output
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+
+## NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
+## Logs
+*.log
+logs/
+
+## IDE settings
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+## Local environment and secrets
+.env
+.env.*
+secrets.json
+secrets.*.json
+appsettings.*.local.json
+
+## Publish
+publish/
+
+## OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
