@@ -27,7 +27,7 @@ namespace Eprocurement.Application.Services
         public async Task<PurchaseRequestResponse> CreateAsync(CreatePurchaseRequestRequest request, CancellationToken cancellationToken = default)
         {
             User requester = await _userRepository.GetByIdAsync(request.RequestedByUserId, cancellationToken)
-                ?? throw new InvalidOperationException("Usuário solicitante não encontrado.");
+                ?? throw new InvalidOperationException("Requester user not found.");
 
             PurchaseRequest purchaseRequest = new PurchaseRequest(request.RequestedByUserId, request.Title, request.Justification);
 
@@ -40,12 +40,21 @@ namespace Eprocurement.Application.Services
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             await _purchaseHistoryRepository.AddAsync(
-                new PurchaseHistory(purchaseRequest.Id, "PurchaseRequestCreated", requester.Name, "Requisição criada."),
+                new PurchaseHistory(purchaseRequest.Id, "PurchaseRequestCreated", requester.Name, "Request created."),
                 cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Map(purchaseRequest);
+        }
+
+        public async Task<IReadOnlyCollection<PurchaseRequestResponse>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            IReadOnlyCollection<PurchaseRequest> requests = await _purchaseRequestRepository.GetAllAsync(cancellationToken);
+
+            return requests
+                .Select(Map)
+                .ToArray();
         }
 
         public async Task<PurchaseRequestResponse?> GetByIdAsync(int purchaseRequestId, CancellationToken cancellationToken = default)
@@ -57,10 +66,10 @@ namespace Eprocurement.Application.Services
         public async Task<PurchaseRequestResponse> ApproveAsync(int purchaseRequestId, ApprovalDecisionRequest request, CancellationToken cancellationToken = default)
         {
             User approver = await _userRepository.GetByIdAsync(request.ApproverUserId, cancellationToken)
-                ?? throw new InvalidOperationException("Aprovador não encontrado.");
+                ?? throw new InvalidOperationException("Approver not found.");
 
             PurchaseRequest purchaseRequest = await _purchaseRequestRepository.GetByIdAsync(purchaseRequestId, cancellationToken)
-                ?? throw new KeyNotFoundException("Requisição não encontrada.");
+                ?? throw new KeyNotFoundException("Purchase request not found.");
 
             purchaseRequest.ApproveByManager();
             _purchaseRequestRepository.Update(purchaseRequest);
@@ -74,13 +83,38 @@ namespace Eprocurement.Application.Services
             return Map(purchaseRequest);
         }
 
+        public async Task<PurchaseRequestResponse> MoveToProcurementAsync(int purchaseRequestId, PurchaseRequestActionRequest request, CancellationToken cancellationToken = default)
+        {
+            User actor = await _userRepository.GetByIdAsync(request.PerformedByUserId, cancellationToken)
+                ?? throw new InvalidOperationException("Responsible user not found.");
+
+            PurchaseRequest purchaseRequest = await _purchaseRequestRepository.GetByIdAsync(purchaseRequestId, cancellationToken)
+                ?? throw new KeyNotFoundException("Purchase request not found.");
+
+            if (purchaseRequest.Status != Domain.Enums.PurchaseRequestStatusEnum.ApprovedByManager)
+            {
+                throw new InvalidOperationException("The request must be approved before moving to procurement.");
+            }
+
+            purchaseRequest.MoveToProcurement();
+            _purchaseRequestRepository.Update(purchaseRequest);
+
+            await _purchaseHistoryRepository.AddAsync(
+                new PurchaseHistory(purchaseRequest.Id, "PurchaseRequestMovedToProcurement", actor.Name, request.Comment),
+                cancellationToken);
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return Map(purchaseRequest);
+        }
+
         public async Task<PurchaseRequestResponse> RejectAsync(int purchaseRequestId, ApprovalDecisionRequest request, CancellationToken cancellationToken = default)
         {
             User approver = await _userRepository.GetByIdAsync(request.ApproverUserId, cancellationToken)
-                ?? throw new InvalidOperationException("Aprovador não encontrado.");
+                ?? throw new InvalidOperationException("Approver not found.");
 
             PurchaseRequest purchaseRequest = await _purchaseRequestRepository.GetByIdAsync(purchaseRequestId, cancellationToken)
-                ?? throw new KeyNotFoundException("Requisição não encontrada.");
+                ?? throw new KeyNotFoundException("Purchase request not found.");
 
             purchaseRequest.RejectByManager();
             _purchaseRequestRepository.Update(purchaseRequest);

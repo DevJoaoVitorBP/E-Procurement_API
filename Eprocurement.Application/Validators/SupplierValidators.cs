@@ -8,20 +8,20 @@ namespace Eprocurement.Application.Validators
         public CreateSupplierRequestValidator()
         {
             RuleFor(x => x.CorporateName)
-                .NotEmpty().WithMessage("Razão social é obrigatória.")
+                .NotEmpty().WithMessage("Corporate name is required.")
                 .MaximumLength(200);
 
             RuleFor(x => x.DocumentNumber)
-                .NotEmpty().WithMessage("Documento é obrigatório.")
+                .NotEmpty().WithMessage("Document number is required.")
                 .MaximumLength(30);
 
             RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("Email é obrigatório.")
-                .EmailAddress().WithMessage("Email inválido.")
+                .NotEmpty().WithMessage("Email is required.")
+                .EmailAddress().WithMessage("Invalid email.")
                 .MaximumLength(150);
 
             RuleFor(x => x.Phone)
-                .NotEmpty().WithMessage("Telefone é obrigatório.")
+                .NotEmpty().WithMessage("Phone is required.")
                 .MaximumLength(30);
         }
     }

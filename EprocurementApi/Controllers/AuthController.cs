@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EprocurementApi.Controllers
 {
+    /// <summary>
+    /// Authentication endpoints and authenticated user data.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
@@ -16,6 +19,13 @@ namespace EprocurementApi.Controllers
             _authService = authService;
         }
 
+        /// <summary>
+        /// Performs login and returns a JWT token.
+        /// </summary>
+        /// <param name="request">User credentials.</param>
+        /// <param name="cancellationToken">Request cancellation token.</param>
+        /// <response code="200">Login successful.</response>
+        /// <response code="401">Invalid credentials.</response>
         [AllowAnonymous]
         [HttpPost("login")]
         [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
@@ -33,6 +43,11 @@ namespace EprocurementApi.Controllers
             }
         }
 
+        /// <summary>
+        /// Returns basic data of the authenticated user.
+        /// </summary>
+        /// <response code="200">Authenticated user data returned successfully.</response>
+        /// <response code="401">Missing, invalid, or expired token.</response>
         [Authorize]
         [HttpGet("me")]
         [ProducesResponseType(StatusCodes.Status200OK)]

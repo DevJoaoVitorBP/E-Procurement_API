@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Eprocurement.Infraestructure.Migrations
 {
     [DbContext(typeof(ProcurementDbContext))]
-    [Migration("20260312230037_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260409235300_InitialCreateIntIds")]
+    partial class InitialCreateIntIds
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

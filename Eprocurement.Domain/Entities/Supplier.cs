@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Eprocurement.Domain.Entities
+﻿namespace Eprocurement.Domain.Entities
 {
     public class Supplier : BaseEntity
     {
@@ -19,6 +15,20 @@ namespace Eprocurement.Domain.Entities
             Email = email;
             Phone = phone;
             IsActive = true;
+        }
+
+        public void UpdateData(string corporateName, string email, string phone)
+        {
+            CorporateName = corporateName;
+            Email = email;
+            Phone = phone;
+            Touch();
+        }
+
+        public void Activate()
+        {
+            IsActive = true;
+            Touch();
         }
 
         public void Deactivate()

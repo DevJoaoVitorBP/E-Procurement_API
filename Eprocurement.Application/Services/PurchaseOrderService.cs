@@ -61,7 +61,7 @@ namespace Eprocurement.Application.Services
                     purchaseRequest.Id,
                     "PurchaseOrderCreated",
                     creator.Name,
-                    $"Pedido criado para fornecedor {supplier.CorporateName}."),
+                    $"Order created for supplier {supplier.CorporateName}."),
                 cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -74,8 +74,88 @@ namespace Eprocurement.Application.Services
             IReadOnlyCollection<PurchaseOrder> orders = await _purchaseOrderRepository.GetAllAsync(cancellationToken);
 
             return orders
-                .Select(o => new PurchaseOrderResponse(o.Id, o.PurchaseRequestId, o.SupplierId, o.CreatedByUserId, o.TotalAmount, o.Status.ToString()))
+                .Select(Map)
                 .ToArray();
         }
+
+        public async Task<PurchaseOrderResponse?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        {
+            PurchaseOrder? order = await _purchaseOrderRepository.GetByIdAsync(id, cancellationToken);
+            return order is null ? null : Map(order);
+        }
+
+        public async Task<PurchaseOrderResponse> MarkAsSentAsync(int id, PurchaseOrderActionRequest request, CancellationToken cancellationToken = default)
+        {
+            PurchaseOrder order = await GetOrderOrThrowAsync(id, cancellationToken);
+            User actor = await GetUserOrThrowAsync(request.PerformedByUserId, cancellationToken);
+
+            if (order.Status != PurchaseOrderStatusEnum.Created)
+            {
+                throw new InvalidOperationException("Only created orders can be marked as sent.");
+            }
+
+            order.MarkAsSent();
+            _purchaseOrderRepository.Update(order);
+
+            await _purchaseHistoryRepository.AddAsync(
+                new PurchaseHistory(order.PurchaseRequestId, "PurchaseOrderSentToSupplier", actor.Name, request.Comment),
+                cancellationToken);
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return Map(order);
+        }
+
+        public async Task<PurchaseOrderResponse> MarkAsCompletedAsync(int id, PurchaseOrderActionRequest request, CancellationToken cancellationToken = default)
+        {
+            PurchaseOrder order = await GetOrderOrThrowAsync(id, cancellationToken);
+            User actor = await GetUserOrThrowAsync(request.PerformedByUserId, cancellationToken);
+
+            if (order.Status != PurchaseOrderStatusEnum.SentToSupplier)
+            {
+                throw new InvalidOperationException("Only sent orders can be completed.");
+            }
+
+            order.MarkAsCompleted();
+            _purchaseOrderRepository.Update(order);
+
+            await _purchaseHistoryRepository.AddAsync(
+                new PurchaseHistory(order.PurchaseRequestId, "PurchaseOrderCompleted", actor.Name, request.Comment),
+                cancellationToken);
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return Map(order);
+        }
+
+        public async Task<PurchaseOrderResponse> CancelAsync(int id, PurchaseOrderActionRequest request, CancellationToken cancellationToken = default)
+        {
+            PurchaseOrder order = await GetOrderOrThrowAsync(id, cancellationToken);
+            User actor = await GetUserOrThrowAsync(request.PerformedByUserId, cancellationToken);
+
+            if (order.Status is PurchaseOrderStatusEnum.Completed or PurchaseOrderStatusEnum.Cancelled)
+            {
+                throw new InvalidOperationException("Completed or cancelled orders cannot be cancelled again.");
+            }
+
+            order.Cancel();
+            _purchaseOrderRepository.Update(order);
+
+            await _purchaseHistoryRepository.AddAsync(
+                new PurchaseHistory(order.PurchaseRequestId, "PurchaseOrderCancelled", actor.Name, request.Comment),
+                cancellationToken);
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return Map(order);
+        }
+
+        private async Task<PurchaseOrder> GetOrderOrThrowAsync(int id, CancellationToken cancellationToken)
+            => await _purchaseOrderRepository.GetByIdAsync(id, cancellationToken)
+                ?? throw new KeyNotFoundException("Purchase order not found.");
+
+        private async Task<User> GetUserOrThrowAsync(int userId, CancellationToken cancellationToken)
+            => await _userRepository.GetByIdAsync(userId, cancellationToken)
+                ?? throw new InvalidOperationException("User not found.");
+
+        private static PurchaseOrderResponse Map(PurchaseOrder order)
+            => new(order.Id, order.PurchaseRequestId, order.SupplierId, order.CreatedByUserId, order.TotalAmount, order.Status.ToString());
     }
 }

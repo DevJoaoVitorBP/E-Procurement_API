@@ -24,5 +24,7 @@ namespace Eprocurement.Infrastructure.Persistence.Repositories
                 .AsNoTracking()
                 .OrderByDescending(x => x.CreatedAtUtc)
                 .ToListAsync(cancellationToken);
+
+        public void Update(PurchaseOrder order) => _context.PurchaseOrders.Update(order);
     }
 }

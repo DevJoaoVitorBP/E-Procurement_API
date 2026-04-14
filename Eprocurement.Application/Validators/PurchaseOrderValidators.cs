@@ -8,13 +8,25 @@ namespace Eprocurement.Application.Validators
         public CreatePurchaseOrderRequestValidator()
         {
             RuleFor(x => x.PurchaseRequestId)
-                .GreaterThan(0).WithMessage("Requisição de compra inválida.");
+                .NotEmpty().WithMessage("Invalid purchase request.");
 
             RuleFor(x => x.SupplierId)
-                .GreaterThan(0).WithMessage("Fornecedor inválido.");
+                .NotEmpty().WithMessage("Invalid supplier.");
 
             RuleFor(x => x.CreatedByUserId)
-                .GreaterThan(0).WithMessage("Usuário criador inválido.");
+                .NotEmpty().WithMessage("Invalid creator user.");
+        }
+    }
+
+    public class PurchaseOrderActionRequestValidator : AbstractValidator<PurchaseOrderActionRequest>
+    {
+        public PurchaseOrderActionRequestValidator()
+        {
+            RuleFor(x => x.PerformedByUserId)
+                .NotEmpty().WithMessage("Invalid responsible user.");
+
+            RuleFor(x => x.Comment)
+                .MaximumLength(500).WithMessage("Comment must be at most 500 characters.");
         }
     }
 }
