@@ -144,7 +144,7 @@ EprocuremmentApi/
     ├── Controllers/                # Controllers
     │   ├── UserControllers.cs
     │   ├── AuthController.cs
-    │   └── PurchaseOrdersController.cs
+    │  
     ├── Program.cs                  # Application setup
     ├── appsettings.json           # Configuration
     └── EprocuremmentApi.http      # Test requests
@@ -553,6 +553,7 @@ catch (Exception ex)
 ✅ **Authorization**: Role-based access control
 ✅ **CORS**: Configurable via appsettings
 
+<!--
 ### Production Security Checklist
 
 > ⚠️ **Warning**: This project is still under development. The items below are recommendations for when used in production.
@@ -567,7 +568,7 @@ catch (Exception ex)
 - [ ] Implement CSRF validation
 - [ ] Add SQL Injection protection
 - [ ] Perform penetration testing
-
+-->
 ## 🗺️ Roadmap
 
 ### Q1 2026 (Current)
