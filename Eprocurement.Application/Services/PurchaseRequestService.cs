@@ -91,11 +91,6 @@ namespace Eprocurement.Application.Services
             PurchaseRequest purchaseRequest = await _purchaseRequestRepository.GetByIdAsync(purchaseRequestId, cancellationToken)
                 ?? throw new KeyNotFoundException("Purchase request not found.");
 
-            if (purchaseRequest.Status != Domain.Enums.PurchaseRequestStatusEnum.ApprovedByManager)
-            {
-                throw new InvalidOperationException("The request must be approved before moving to procurement.");
-            }
-
             purchaseRequest.MoveToProcurement();
             _purchaseRequestRepository.Update(purchaseRequest);
 

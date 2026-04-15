@@ -44,9 +44,9 @@ namespace Eprocurement.Application.Services
                 throw new InvalidOperationException("Inactive supplier.");
             }
 
-            if (purchaseRequest.Status != PurchaseRequestStatusEnum.ApprovedByManager)
+            if (purchaseRequest.Status != PurchaseRequestStatusEnum.InProcurement)
             {
-                throw new InvalidOperationException("The request must be approved to generate an order.");
+                throw new InvalidOperationException("The request must be in procurement to generate an order.");
             }
 
             PurchaseOrder order = new PurchaseOrder(request.PurchaseRequestId, request.SupplierId, request.CreatedByUserId, purchaseRequest.TotalAmount);
