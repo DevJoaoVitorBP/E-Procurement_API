@@ -2,5 +2,6 @@
   <Project Path="Eprocurement.Application/Eprocurement.Application.csproj" />
   <Project Path="Eprocurement.Domain/Eprocurement.Domain.csproj" />
   <Project Path="Eprocurement.Infraestructure/Eprocurement.Infraestructure.csproj" />
+  <Project Path="Eprocurement.Tests/Eprocurement.Tests.csproj" />
   <Project Path="EprocurementApi/EprocurementApi.csproj" Id="23237cb8-3b65-4803-9676-31fda0405173" />
 </Solution>
